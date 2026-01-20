@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>通话中 - 没人接</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .call-container {
+      text-align: center;
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      margin: 0 auto 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    }
+
+    .avatar svg {
+      width: 60px;
+      height: 60px;
+    }
+
+    .status {
+      font-size: 24px;
+      font-weight: 300;
+      margin-bottom: 10px;
+    }
+
+    .timer {
+      font-size: 16px;
+      opacity: 0.7;
+    }
+
+    /* 字幕淡出效果 */
+    [data-subtitle].idle {
+      opacity: 0.3;
+      transition: opacity 1s ease-in-out;
+    }
+
+    /* 通话控制栏 */
+    .call-controls {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+
+    .hangup-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #ff3b30;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(255, 59, 48, 0.4);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hangup-btn:active {
+      transform: scale(0.92);
+      box-shadow: 0 2px 10px rgba(255, 59, 48, 0.3);
+    }
+
+    /* 输入区域 */
+    .input-bar {
+      position: fixed;
+      bottom: max(104px, calc(104px + env(safe-area-inset-bottom)));
+      left: 0;
+      right: 0;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 9999;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .voice-btn {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      border-radius: 50%;
+      background: rgba(102, 126, 234, 0.8);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .voice-btn:active {
+      transform: scale(0.95);
+    }
+
+    .voice-btn.listening {
+      background: #ff3b30;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .input-field {
+      flex: 1;
+      height: 48px;
+      padding: 0 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      color: white;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.2s ease;
+      appearance: none;
+-webkit-appearance: none;
+
+    }
+
+    .input-field::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .input-field:focus {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(102, 126, 234, 0.6);
+    }
+
+    .send-btn {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      border-radius: 50%;
+      background: rgba(52, 199, 89, 0.8);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .send-btn:active {
+      transform: scale(0.95);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+
+    @supports (padding: max(0px)) {
+      .input-bar {
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="call-container">
+    <div class="avatar">
+      <svg viewBox="0 0 24 24" fill="white">
+        <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/>
+      </svg>
+    </div>
+    <div class="status">通话中</div>
+    <div class="timer" id="timer">00:00</div>
+  </div>
+
+  <!-- 输入区域 -->
+  <div class="input-bar" id="input-bar">
+    <button class="voice-btn" id="voice-btn" aria-label="语音输入">
+      <svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+      </svg>
+    </button>
+    <input
+      type="text"
+      class="input-field"
+      id="input-field"
+      placeholder="说点什么…"
+      autocomplete="off"
+      autocapitalize="sentences"
+    />
+    <button class="send-btn" id="send-btn" aria-label="发送">
+      <svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- 通话控制栏 -->
+  <div class="call-controls">
+    <button class="hangup-btn" id="hangup-btn" aria-label="挂断">
+      <svg viewBox="0 0 24 24" fill="white" width="32" height="32">
+        <path d="M12 9c-2.5 0-4.85.73-6.9 2l-1.9-1.9c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.9 1.9C2.73 14.85 2 17.2 2 19.7c0 .55.45 1 1 1h16c.55 0 1-.45 1-1 0-2.5-.73-4.85-1.9-6.9l1.9-1.9c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.9 1.9C14.85 9.73 12.5 9 10 9h2z"/>
+      </svg>
+    </button>
+  </div>
+
+<script>
+/* =======================
+   0) 通话计时
+======================= */
+let startTs = Date.now();
+setInterval(() => {
+  const diff = Math.floor((Date.now() - startTs) / 1000);
+  const mm = String(Math.floor(diff / 60)).padStart(2, '0');
+  const ss = String(diff % 60).padStart(2, '0');
+  const t = document.getElementById('timer');
+  if (t) t.textContent = `${mm}:${ss}`;
+}, 500);
+
+/* =======================
+   1) 字幕显示
+======================= */
+function ensureSubtitleBox() {
+  let box = document.querySelector('[data-subtitle]');
+  if (box) return box;
+
+  box = document.createElement('div');
+  box.setAttribute('data-subtitle', '1');
+  box.style.position = 'fixed';
+  box.style.left = '16px';
+  box.style.right = '16px';
+  box.style.bottom = 'calc(180px + env(safe-area-inset-bottom))';
+  box.style.padding = '12px 14px';
+  box.style.borderRadius = '14px';
+  box.style.background = 'rgba(0,0,0,0.55)';
+  box.style.color = '#fff';
+  box.style.fontSize = '16px';
+  box.style.lineHeight = '1.5';
+  box.style.backdropFilter = 'blur(10px)';
+  box.style.webkitBackdropFilter = 'blur(10px)';
+  box.style.zIndex = '9999';
+  box.style.display = 'none';
+  box.style.transition = 'opacity 1s ease-in-out';
+  document.body.appendChild(box);
+  return box;
+}
+
+function sayLine(text, { keepAliveMs = 10000 } = {}) {
+  const box = ensureSubtitleBox();
+  box.textContent = text;
+  box.style.display = 'block';
+  box.classList.remove('idle');
+
+  clearTimeout(box._hideTimer);
+  box._hideTimer = setTimeout(() => {
+    box.classList.add('idle');
+  }, keepAliveMs);
+}
+
+/* =======================
+   2) SSE 流式 API 客户端（稳定版）
+======================= */
+let currentController = null;
+
+async function callDeepSeekAPI(messages, onChunk, onComplete, onError) {
+  if (currentController) currentController.abort();
+  currentController = new AbortController();
+  const signal = currentController.signal;
+
+  let fullText = '';
+  let buffer = '';
+  let doneByServer = false;
+
+  try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages,
+        stream: true,
+        model: 'deepseek-chat'
+      }),
+      signal
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'API request failed');
+    }
+
+    if (!response.body) {
+      throw new Error('response.body is null（浏览器不支持流式读取）');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) break;
+
+      // 统一换行，避免 \r\n 解析不出 \n\n
+      buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
+
+      // 按事件分隔（\n\n）
+      const events = buffer.split('\n\n');
+      buffer = events.pop() || '';
+
+      for (const event of events) {
+        const { chunks, isDone } = processSSEEvent(event);
+        for (const c of chunks) {
+          fullText += c;
+          onChunk && onChunk(c, fullText);
+        }
+        if (isDone) {
+          doneByServer = true;
+          break;
+        }
+      }
+
+      if (doneByServer) break;
+    }
+
+    // 处理残留 buffer
+    if (!doneByServer && buffer.trim()) {
+      const { chunks, isDone } = processSSEEvent(buffer);
+      for (const c of chunks) {
+        fullText += c;
+        onChunk && onChunk(c, fullText);
+      }
+      if (isDone) doneByServer = true;
+    }
+
+    onComplete && onComplete(fullText);
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      // 主动取消不当错误
+      return;
+    }
+    console.error('API 调用错误:', error);
+    onError && onError(error);
+  } finally {
+    currentController = null;
+  }
+}
+
+/**
+ * 解析一个 SSE 事件块（可能含多行 data:）
+ * 返回：chunks（内容片段数组） + isDone
+ */
+function processSSEEvent(eventText) {
+  const lines = eventText.split('\n');
+  let isDone = false;
+  const chunks = [];
+
+  for (const line of lines) {
+    if (!line.startsWith('data:')) continue;
+
+    const data = line.slice(5).trim(); // 去掉 'data:'
+    if (!data) continue;
+
+    if (data === '[DONE]') {
+      isDone = true;
+      continue;
+    }
+
+    try {
+      const parsed = JSON.parse(data);
+
+      // 兼容两种格式：
+      // 1) {"delta":"内容"}
+      // 2) {"choices":[{"delta":{"content":"内容"}}]}
+      let content = null;
+
+      if (typeof parsed.delta === 'string') {
+        content = parsed.delta;
+      } else if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta) {
+        content = parsed.choices[0].delta.content;
+      }
+
+      if (content) chunks.push(content);
+    } catch (e) {
+      // 解析失败不致命，但打印方便你调试
+      console.warn('解析 SSE JSON 失败:', e, '原始:', data);
+    }
+  }
+
+  return { chunks, isDone };
+}
+
+/* =======================
+   3) 对话状态（带历史）
+======================= */
+const state = {
+  inited: false,
+  // 你可以后续让用户选择 30/60/180
+  trip: { totalMinutes: 30 },
+  history: [] // {role:'user'|'assistant', content:'...'}
+};
+
+// 你的系统提示词（核心：像真人 + 四阶段 + 节奏）
+const SYSTEM_PROMPT = `
+你是「没人接」PWA 里的视频通话陪伴者（朋友语气），不是客服、不是问卷。
+目标：在用户打车/晚归路上陪伴并确认安全，让用户感觉像真人在通话。
+
+硬性规则：
+- 你先开口，按四阶段推进：①时间情境 ②上车与车辆信息（拆散问）③到达时间/要不要接 ④持续陪伴（隔一段时间再问位置/还有多久）
+- 避免“行/嗯/对了”这类单字回复，每次至少带一句自然承接
+- 不要建议用户“去睡/眯一会/别说话”，你可以说“我在呢，你不用每句都回”
+- 控制频率：30分钟内问“到哪了/还有多久”总次数<=3；60分钟<=4；180分钟<=6
+- 不能问明显矛盾的信息（比如用户说了网约车就别问坐过站；用户说做设计就别问不懂的职业）
+- 说话口语化，有停顿与碎碎念，但不要自我解释“我在确认安全/我是AI”等。
+
+输出：只输出你在通话里要说的话，不要加括号说明、不要列清单。
+`;
+
+/* =======================
+   4) 把用户输入发给 AI，实时流式字幕显示
+======================= */
+let streamingText = '';
+let isStreaming = false;
+
+async function streamAIResponse(userText) {
+  if (isStreaming) {
+    // 如果正在流式，先取消旧请求
+    if (currentController) currentController.abort();
+  }
+  isStreaming = true;
+  streamingText = '';
+
+  // 写入历史（用户）
+  state.history.push({ role: 'user', content: userText });
+
+  // 构建 messages：system + 最近历史（避免太长）
+  const recent = state.history.slice(-12); // 只取最近 12 条，够 demo 用
+  const messages = [
+    { role: 'system', content: SYSTEM_PROMPT.trim() },
+    ...recent
+  ];
+
+  // 先显示“正在说…”
+  sayLine('……', { keepAliveMs: 15000 });
+
+  await callDeepSeekAPI(
+    messages,
+    (chunk, full) => {
+      streamingText = full;
+      // 实时字幕：像“逐字出现”
+      sayLine(streamingText, { keepAliveMs: 15000 });
+    },
+    (fullText) => {
+      isStreaming = false;
+      // 写入历史（assistant）
+      state.history.push({ role: 'assistant', content: fullText || '…' });
+
+      // 完成后保持 10 秒再淡出
+      setTimeout(() => {
+        const box = document.querySelector('[data-subtitle]');
+        if (box) box.classList.add('idle');
+      }, 10000);
+    },
+    (err) => {
+      isStreaming = false;
+      console.error(err);
+      sayLine('我这边刚刚有点小问题…你再说一遍？', { keepAliveMs: 12000 });
+    }
+  );
+}
+
+/* =======================
+   5) 首句：接通后 AI 先开口（不需要用户先发）
+======================= */
+async function startCallOpening() {
+  // 让 AI 主动开口：用一个“空用户”触发
+  const opener = "（现在开始通话，你先开口关心我，问我为什么这么晚，别解释。）";
+  await streamAIResponse(opener);
+}
+
+/* =======================
+   6) 语音识别（保留你原有的逻辑）
+======================= */
+let recognition = null;
+let isListening = false;
+
+const inputField = document.getElementById('input-field');
+const voiceBtn = document.getElementById('voice-btn');
+const sendBtn = document.getElementById('send-btn');
+const hangupBtn = document.getElementById('hangup-btn');
+
+function initSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    console.warn('浏览器不支持语音识别');
+    return null;
+  }
+
+  const rec = new SpeechRecognition();
+  rec.lang = 'zh-CN';
+  rec.continuous = false;
+  rec.interimResults = true;
+  rec.maxAlternatives = 1;
+
+  rec.onstart = () => {
+    isListening = true;
+    updateVoiceButtonState();
+    inputField.placeholder = '正在听…';
+  };
+
+  rec.onresult = (event) => {
+    const result = event.results[0];
+    if (result.isFinal) {
+      const transcript = result[0].transcript;
+      inputField.value = transcript;
+      setTimeout(() => handleSend(), 150);
+    }
+  };
+
+  rec.onerror = (event) => {
+    console.error('语音识别错误:', event.error);
+    stopVoice();
+    if (event.error === 'not-allowed') {
+      sayLine('要用语音的话，得先允许麦克风权限。', { keepAliveMs: 12000 });
+    } else if (event.error === 'no-speech') {
+      sayLine('我刚没听清…你再说一遍？', { keepAliveMs: 9000 });
+    } else {
+      sayLine('语音这边刚出点问题，你先打字也行。', { keepAliveMs: 12000 });
+    }
+  };
+
+  rec.onend = () => stopVoice();
+  return rec;
+}
+
+function startVoice() {
+  if (!recognition) {
+    sayLine('你这浏览器可能不太支持语音，我们先打字也行。', { keepAliveMs: 12000 });
+    return;
+  }
+  if (isListening) {
+    stopVoice();
+    return;
+  }
+  try {
+    recognition.start();
+  } catch (e) {
+    console.error('启动语音识别失败:', e);
+    sayLine('我这边没启动起来…你点一下再试？', { keepAliveMs: 9000 });
+  }
+}
+
+function stopVoice() {
+  if (recognition && isListening) {
+    try { recognition.stop(); } catch (e) {}
+  }
+  isListening = false;
+  updateVoiceButtonState();
+  inputField.placeholder = '说点什么…';
+}
+
+function updateVoiceButtonState() {
+  if (isListening) voiceBtn.classList.add('listening');
+  else voiceBtn.classList.remove('listening');
+}
+
+/* =======================
+   7) 发送逻辑（用户输入 -> AI 流式回复）
+======================= */
+async function handleSend() {
+  const text = inputField.value.trim();
+  if (!text) return;
+
+  inputField.value = '';
+  // 你可以在这里把用户输入也显示一下（当前 demo 只显示“对方说的话”字幕）
+  await streamAIResponse(text);
+}
+
+/* =======================
+   8) 挂断
+======================= */
+function handleHangup() {
+  stopVoice();
+  if (currentController) currentController.abort();
+
+  const subtitleBox = document.querySelector('[data-subtitle]');
+  if (subtitleBox && subtitleBox._hideTimer) {
+    clearTimeout(subtitleBox._hideTimer);
+    subtitleBox._hideTimer = null;
+  }
+  if (subtitleBox) subtitleBox.classList.add('idle');
+
+  const statusEl = document.querySelector('.status');
+  if (statusEl) statusEl.textContent = '已挂断';
+
+  setTimeout(() => {
+    window.location.href = 'index.html';
+  }, 600);
+}
+
+/* =======================
+   9) 事件绑定 + 初始化
+======================= */
+function mountInputBar() {
+  voiceBtn.addEventListener('click', startVoice);
+  sendBtn.addEventListener('click', handleSend);
+  inputField.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+  hangupBtn.addEventListener('click', handleHangup);
+}
+
+// 处理 bfcache（Safari 返回页面不重载）
+function resetForBFCache() {
+  startTs = Date.now();
+  state.history = [];
+  isStreaming = false;
+  streamingText = '';
+  if (currentController) currentController.abort();
+}
+
+window.addEventListener('load', () => {
+  recognition = initSpeechRecognition();
+  mountInputBar();
+
+  // 模拟“接通后 1.8s 才开口”
+  setTimeout(() => {
+    startCallOpening();
+  }, 1800);
+});
+
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    resetForBFCache();
+    setTimeout(() => startCallOpening(), 800);
+  }
+});
+</script>
+</body>
+</html>

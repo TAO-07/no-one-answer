@@ -1,0 +1,33 @@
+{
+  "name": "没人接",
+  "short_name": "没人接",
+  "description": "深夜回家的陪伴者",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://api.iconify.design/mdi:phone-in-talk.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "utilities"],
+  "shortcuts": [
+    {
+      "name": "开始通话",
+      "short_name": "通话",
+      "description": "接听来电",
+      "url": "/index.html",
+      "icons": [
+        {
+          "src": "https://api.iconify.design/mdi:phone-in-talk.svg",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

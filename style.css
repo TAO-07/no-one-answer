@@ -1,0 +1,267 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* iOS解锁层 */
+.unlock-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.unlock-content {
+    text-align: center;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.unlock-icon {
+    margin-bottom: 20px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.unlock-text {
+    color: white;
+    font-size: 24px;
+    font-weight: 300;
+    margin-bottom: 10px;
+}
+
+.unlock-subtext {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 16px;
+}
+
+/* 来电界面 */
+.call-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 60px 20px 40px;
+}
+
+.call-screen.active {
+    display: flex;
+    animation: slideUp 0.3s ease-out;
+}
+
+.call-header {
+    text-align: center;
+}
+
+.caller-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.caller-avatar {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.avatar-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(102, 126, 234, 0.2);
+    animation: ripple 2s ease-out infinite;
+}
+
+.avatar-image {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+    animation: breathe 3s ease-in-out infinite;
+}
+
+.caller-name {
+    font-size: 32px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.call-status {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 300;
+}
+
+.call-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 400px;
+    margin: 0 auto;
+    position: fixed;
+    bottom: max(60px, env(safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+}
+
+.action-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.action-btn:active {
+    transform: scale(0.95);
+}
+
+.decline-btn {
+    background: #ff3b30;
+    box-shadow: 0 4px 20px rgba(255, 59, 48, 0.4);
+}
+
+.accept-btn {
+    background: #34c759;
+    box-shadow: 0 4px 20px rgba(52, 199, 89, 0.4);
+}
+
+.ended-message {
+    display: none;
+    text-align: center;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.ended-message.active {
+    display: block;
+}
+
+.ended-message svg {
+    margin-bottom: 15px;
+}
+
+.ended-text {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 300;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes ripple {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.6;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+@keyframes breathe {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* iPhone适配 */
+@media (max-width: 375px) {
+    .caller-name {
+        font-size: 28px;
+    }
+
+    .call-status {
+        font-size: 16px;
+    }
+
+    .action-btn {
+        width: 65px;
+        height: 65px;
+    }
+}
+
+@media (max-height: 667px) {
+    .call-screen {
+        padding: 40px 20px 30px;
+    }
+
+    .caller-avatar {
+        margin-bottom: 20px;
+    }
+}
+
+/* 安全区域适配 */
+@supports (padding: max(0px)) {
+    .call-screen {
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+        padding-bottom: max(40px, env(safe-area-inset-bottom));
+    }
+}
