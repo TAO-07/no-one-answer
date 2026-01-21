@@ -67,7 +67,52 @@
 
     <!-- 保存记录界面 -->
     <div id="save-screen" class="save-screen">
-        <button class="back-btn" id="back-btn">返回</button>
+        <div class="save-container">
+            <h2 class="save-title">保存记录</h2>
+            <form class="save-form">
+                <div class="form-group">
+                    <label class="form-label">时间</label>
+                    <input type="text" class="form-input" id="time-input" placeholder="">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">地点</label>
+                    <input type="text" class="form-input" id="location-input" placeholder="">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">车牌号</label>
+                    <input type="text" class="form-input" id="plate-input" placeholder="">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">车颜色</label>
+                    <select class="form-select" id="color-input">
+                        <option value="">请选择</option>
+                        <option value="黑">黑</option>
+                        <option value="白">白</option>
+                        <option value="银">银</option>
+                        <option value="灰">灰</option>
+                        <option value="红">红</option>
+                        <option value="蓝">蓝</option>
+                        <option value="绿">绿</option>
+                        <option value="黄">黄</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="form-btn form-btn-back" id="back-btn">返回</button>
+                    <button type="button" class="form-btn form-btn-save" id="save-submit-btn">保存</button>
+                </div>
+            </form>
+
+            <div class="records-section">
+                <div class="records-header">
+                    <h3 class="records-title">记录列表</h3>
+                    <button type="button" class="clear-all-btn" id="clear-all-btn">清空全部</button>
+                </div>
+                <div class="records-list" id="records-list">
+                    <div class="no-records">暂无记录</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <audio id="ringtone" loop preload="auto">

@@ -317,12 +317,125 @@ body {
     height: 100%;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     display: none;
+    overflow-y: auto;
 }
 
 .save-screen.active {
     display: block;
 }
 
+.save-container {
+    padding: 40px 20px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.save-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.save-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-label {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.form-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.form-input:focus,
+.form-select:focus {
+    border-color: rgba(102, 126, 234, 0.6);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+}
+
+.form-select option {
+    background: #1a1a2e;
+    color: white;
+}
+
+.form-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.form-btn {
+    flex: 1;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.form-btn:active {
+    transform: scale(0.98);
+}
+
+.form-btn-back {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.form-btn-back:active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.form-btn-save {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+}
+
+.form-btn-save:active {
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+/* 原有back-btn样式保留（如果需要） */
 .back-btn {
     position: fixed;
     top: 20px;
@@ -342,4 +455,125 @@ body {
 
 .back-btn:active {
     background: rgba(255, 255, 255, 0.3);
+}
+
+/* Toast 提示 */
+.toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 16px 24px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 16px;
+    border-radius: 8px;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease-in;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* 记录列表区域 */
+.records-section {
+    margin-top: 50px;
+}
+
+.records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.records-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+}
+
+.clear-all-btn {
+    padding: 8px 16px;
+    background: rgba(255, 59, 48, 0.2);
+    border: 1px solid rgba(255, 59, 48, 0.4);
+    border-radius: 8px;
+    color: #ff3b30;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.clear-all-btn:active {
+    background: rgba(255, 59, 48, 0.3);
+}
+
+.records-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.no-records {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 16px;
+}
+
+.record-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.record-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.record-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.record-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.record-field-label {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    min-width: 50px;
+}
+
+.record-field-value {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.delete-btn {
+    padding: 8px 16px;
+    background: rgba(255, 59, 48, 0.2);
+    border: 1px solid rgba(255, 59, 48, 0.3);
+    border-radius: 8px;
+    color: #ff3b30;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+}
+
+.delete-btn:active {
+    background: rgba(255, 59, 48, 0.3);
 }
