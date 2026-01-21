@@ -8,6 +8,10 @@ const ringtone = document.getElementById('ringtone');
 const acceptBtn = document.getElementById('accept-btn');
 const declineBtn = document.getElementById('decline-btn');
 const endedMessage = document.getElementById('ended-message');
+const homeBtn = document.getElementById('home-btn');
+const saveBtn = document.getElementById('save-btn');
+const saveScreen = document.getElementById('save-screen');
+const backBtn = document.getElementById('back-btn');
 
 // iOS音频解锁
 unlockOverlay.addEventListener('click', async () => {
@@ -51,6 +55,23 @@ acceptBtn.addEventListener('click', () => {
 
     // 跳转到通话页面
     window.location.href = 'call.html';
+});
+
+// 首页按钮
+homeBtn.addEventListener('click', () => {
+    window.location.href = 'home.html';
+});
+
+// 保存记录按钮
+saveBtn.addEventListener('click', () => {
+    callScreen.classList.remove('active');
+    saveScreen.classList.add('active');
+});
+
+// 返回按钮
+backBtn.addEventListener('click', () => {
+    saveScreen.classList.remove('active');
+    callScreen.classList.add('active');
 });
 
 // 挂断按钮
